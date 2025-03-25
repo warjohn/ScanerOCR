@@ -41,12 +41,6 @@ dependencies {
     implementation 'com.rmtheis:tess-two:9.1.0'
     implementation 'com.google.mlkit:text-recognition:16.0.1'
 
-    // To recognize Chinese script
-    implementation 'com.google.mlkit:text-recognition-chinese:16.0.1'
-
-    implementation 'org.tensorflow:tensorflow-lite:2.14.0'
-    implementation 'org.tensorflow:tensorflow-lite-support:0.4.3'
-    implementation 'org.tensorflow:tensorflow-lite-gpu:2.16.1'
-    implementation 'org.tensorflow:tensorflow-lite-metadata:0.5.0'
+    implementation 'com.google.mediapipe:tasks-genai:0.10.22'
 
 }
