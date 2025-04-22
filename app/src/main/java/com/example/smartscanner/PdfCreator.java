@@ -2,25 +2,24 @@ package com.example.smartscanner;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
-import android.graphics.Paint;
 import android.graphics.pdf.PdfDocument;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.util.Random;
 
 public class PdfCreator {
-    // Создание PDF-файла
-    public static File createPdf(String text, Context context) {
+
+    // Создание PDF-файла с изображением
+    public static File createPdf(Bitmap bitmap, Context context) {
         // Создаем PDF-документ
         PdfDocument document = new PdfDocument();
-        Paint paint = new Paint();
-        paint.setTextSize(12);
 
         // Размеры страницы A4
         int pageWidth = 595; // A4 width in points
@@ -31,13 +30,19 @@ public class PdfCreator {
         PdfDocument.Page page = document.startPage(pageInfo);
         Canvas canvas = page.getCanvas();
 
-        // Рисуем текст
-        String[] lines = text.split("\n");
-        float y = 20; // Начальная позиция по вертикали
-        for (String line : lines) {
-            canvas.drawText(line, 20, y, paint);
-            y += 20; // Перемещаемся на следующую строку
-        }
+        // Рассчитываем размеры для отрисовки Bitmap
+        int bitmapWidth = bitmap.getWidth();
+        int bitmapHeight = bitmap.getHeight();
+
+        // Масштабируем изображение, чтобы оно помещалось на странице
+        float scale = Math.min((float) pageWidth / bitmapWidth, (float) pageHeight / bitmapHeight);
+        int scaledWidth = (int) (bitmapWidth * scale);
+        int scaledHeight = (int) (bitmapHeight * scale);
+
+        // Рисуем Bitmap в центре страницы
+        int x = (pageWidth - scaledWidth) / 2;
+        int y = (pageHeight - scaledHeight) / 2;
+        canvas.drawBitmap(bitmap, null, new android.graphics.Rect(x, y, x + scaledWidth, y + scaledHeight), null);
 
         // Завершаем страницу
         document.finishPage(page);
@@ -52,9 +57,11 @@ public class PdfCreator {
             document.close(); // Закрываем документ
         }
     }
+
     private static File savePdfToDocuments(Context context, PdfDocument document) throws IOException {
         ContentValues values = new ContentValues();
-        values.put(MediaStore.MediaColumns.DISPLAY_NAME, "output.pdf");
+        String fileName = generateRandomNumericFileName(8) + ".pdf";
+        values.put(MediaStore.MediaColumns.DISPLAY_NAME, fileName);
         values.put(MediaStore.MediaColumns.MIME_TYPE, "application/pdf");
         values.put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_DOCUMENTS);
 
@@ -68,5 +75,14 @@ public class PdfCreator {
         }
 
         return new File(uri.getPath());
+    }
+
+    private static String generateRandomNumericFileName(int length) {
+        Random random = new Random();
+        StringBuilder sb = new StringBuilder(length);
+        for (int i = 0; i < length; i++) {
+            sb.append(random.nextInt(10)); // Генерация цифры от 0 до 9
+        }
+        return sb.toString();
     }
 }

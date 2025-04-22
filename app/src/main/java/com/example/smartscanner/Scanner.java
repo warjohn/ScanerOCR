@@ -1,20 +1,14 @@
 package com.example.smartscanner;
 
-import android.content.ContentValues;
-import android.content.Context;
 import android.content.IntentSender;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
-import android.os.Environment;
-import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.IntentSenderRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.tasks.Task;
 import com.google.mlkit.vision.documentscanner.GmsDocumentScanner;
@@ -36,12 +30,8 @@ public class Scanner {
     private final BlockingQueue<Uri> imageQueue = new LinkedBlockingQueue<>();
     private boolean isRunning = true;
 
-    private TesseractHelper tesseractHelper;
-    private boolean shouldContinueScanning = true;
-
-    public Scanner(AppCompatActivity activity, TesseractHelper tesseractHelper) {
+    public Scanner(AppCompatActivity activity) {
         this.activityRef = new WeakReference<>(activity);
-        this.tesseractHelper = tesseractHelper;
 
         // Настройка параметров сканера
         options = new GmsDocumentScannerOptions.Builder()
@@ -128,13 +118,8 @@ public class Scanner {
             // Преобразуем URI в Bitmap
             InputStream inputStream = activity.getContentResolver().openInputStream(imageUri);
             Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-
-            // Распознаем текст
-            String recognizedText = tesseractHelper.extractTextFromImage(bitmap);
-            System.out.println("Распознанный текст: " + recognizedText);
-
             // Создаем PDF
-            File pdfFile = PdfCreator.createPdf(recognizedText, activity);
+            File pdfFile = PdfCreator.createPdf(bitmap, activity);
             System.out.println("PDF сохранён: " + pdfFile.getAbsolutePath());
         } catch (Exception e) {
             e.printStackTrace();
